@@ -1,0 +1,225 @@
+---
+title: "Assignment – Regression Analytics"
+author: "FNU Dimple"
+date: "2024-10-22"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tinytex)
+library(dplyr, warn.conflicts = FALSE)
+```
+
+# Questions
+
+**1. Run the following code in R-studio to create two variables X and Y.**
+
+```{r}
+library(readr)
+XY <- read_csv("~/Desktop/Q1.CSV")
+```
+```{r}
+set.seed(2017)
+X <- runif(100) * 10
+Y <- X * 4 + 3.45
+Y <- rnorm(100) * 0.29 * Y + Y
+```
+
+**a) Plot Y against X. Include a screenshot of the plot in your submission. Using the File menu you can save the graph as a picture on your computer. Based on the plot do you think we can fit a linear model to explain Y based on X?
+
+```{r}
+# Plot Y against X
+plot(Y ~ X,  xlab = 'X', ylab = 'Y', col = 'purple', main = 'Scatter Plot of Y aganist X',
+     pch = 19, bg = 'lightgray')
+grid(col = 'gray')
+lm_model <- lm(Y ~ X)
+abline(lm_model, col = "black")
+```
+
+On the above plot, it makes sense to use a linear model to describe Y based on X. The scatter plot shows a clear straight-line pattern, which means the points are aligned. This suggests that changes in X are linked to changes in Y in a consistent way. So, we can use a simple linear equation to capture this relationship.
+
+**b) Construct a simple linear model of Y based on X. Write the equation that explains Y based on X. What is the accuracy of this model?**
+
+```{r}
+# Construct a simple linear model of Y based on X.
+Linear_Model <- lm(Y ~ X) # lm() is the function to create linear model of Y from X
+
+```
+
+```{r}
+Linear_Model$coefficients
+```
+
+We can see the intercept being 4.46 and the coefficient the X variable is 3.61
+
+```{r}
+Linear_Model$residuals
+```
+
+```{r}
+Linear_Model$fitted.values
+```
+
+
+Model$fitted value gives us estimated values of Y based on the model. So in this case you can see that the first fitted value is 37.83 where as the actual was 56.33 therefore the distance between the two is 18.5, shown as the first element of the residuals.
+
+```{r}
+summary(Linear_Model)
+```
+
+**The equation that explains Y based on X: 4.4655 + 3.6108X**
+
+In this linear model, lm(Y ~ X), X is the independent variable (or predictor), and Y is the dependent variable (or outcome) I am trying to explain. This command tells R to create a model predicting Y based on X. The model summary shows us the residuals (the differences between actual and predicted Y values). These residuals range from a minimum of -26.75 to a maximum of 37.50, meaning that the prediction errors are not perfectly balanced around zero, suggesting some variation in predictions. The coefficients table provides the estimates for the intercept and slope. Here, the intercept is 4.46, meaning that when X is zero, the predicted Y value is around 4.46. The slope for X is 3.61, which indicates that for each increase of 1 in X, Y is expected to increase by about 3.61 units. The p-values for both the intercept and X are very small, close to zero. This suggests both terms are statistically significant predictors of Y, meaning that X has a real impact on predicting Y. The positive coefficient for X (3.61) shows that as X goes up, Y tends to increase as well, which is what we might expect.
+To determine the accuracy of this model, we look at the R-squared value, which is 0.6517, or about 65.2%. This tells us that around 65% of the variability in Y can be explained by X using this model, which indicates a fairly good fit. However, there is still some variation in Y that the model does not capture, so it’s not a perfect predictor but still provides a reasonable estimate of Y based on X.
+
+**(c) How the Coefficient of Determination, $R^2$, of the model above is related to the correlation coefficient of X and Y?**
+
+```{r}
+# Coefficient of Determination, R 2
+Correlation <- cor(X, Y)
+R_squared <- round(Correlation^2, 4)
+cat("The correlation coefficient between Y and X is", round(Correlation, 4), "\n")
+```
+
+```{r}
+cat("The Coefficient of Determination (R-squared) is", R_squared, "\n")
+```
+
+R-squared is derived from the correlation coefficient, which means both metrics are helpful for understanding the linear relationship between two variables. R-squared indicates how well a linear regression model fits the data by showing the percentage of change in the dependent variable that can be explained by the independent variable.
+
+# Question 2
+
+We will use the ‘mtcars’ dataset for this question. The dataset is already included in your R distribution. The dataset shows some of the characteristics of different cars. The following shows few samples (i.e. the first 6 rows) of the dataset. 
+
+```{r}
+# mtcars dataset
+data(mtcars)
+head(mtcars)
+dim(mtcars)
+str(mtcars)
+summary(mtcars)
+```
+
+a) James wants to buy a car. He and his friend, Chris, have different opinions about the Horse Power (hp) of cars. James think the weight of a car (wt) can be used to estimate the Horse Power of the car while Chris thinks the fuel consumption expressed in Mile Per Gallon (mpg), is a better estimator of the (hp). Who do you think is right? Construct simple linear models using mtcars data to answer the question?
+
+**According to James opinion**
+
+```{r}
+plot(mtcars$hp ~ mtcars$wt,  xlab = 'Weight', ylab = 'Horse Power', col = 'purple', 
+     main = 'Scatter Plot of Horse Power aganist Weight', pch = 19, bg = 'lightgray')
+grid(col = 'gray')
+lm_hp <-lm(mtcars$hp~mtcars$wt)
+abline(lm_hp, col = "black")
+summary(lm_hp)
+```
+
+**Answer: The accuracy for the prediction made by james is 43.39%**
+
+The model uses car weight to predict horsepower and shows that weight explains about 43.39% of the variation in horsepower. This means that while weight is a factor, it doesn’t fully account for horsepower changes. The model’s p-value for weight is very low (4.146e-05), meaning weight is a significant predictor of horsepower. In other words, as a car’s weight goes up, horsepower generally increases. However, since the R-squared value is not very high.
+
+**According to Chris Opinion**
+
+```{r}
+plot(mtcars$hp ~ mtcars$mpg,xlab = 'MPG', ylab = 'Horse Power', col = 'purple', 
+     main = 'Scatter Plot of Horse Power aganist MPG', pch = 19, bg = 'lightgray')
+grid(col = 'gray')
+lm_mpg <-lm(mtcars$hp~mtcars$mpg)
+abline(lm_mpg, col = "black")
+summary(lm_mpg)
+```
+
+**Answer: The accuracy for prediction made by chris is 60.24%**
+
+The model uses miles per gallon (mpg) to predict horsepower (hp) and shows that mpg explains about 60.24% of the variation in horsepower. This means that while mpg is an important factor, it doesn’t fully account for changes in horsepower. The model’s p-value for mpg is very low (1.788e-07), indicating that mpg is a significant predictor of horsepower.
+
+**Who do you think is right?** 
+
+The data confirms Chris's belief that miles per gallon (mpg) is a better predictor of horsepower (hp) than weight (wt). Chris's estimation appears to be quite accurate. Comparing the two linear models shows that the mpg model performs better, as indicated by its higher R-squared value of 0.6024, compared to 0.4339 for the wt model. Additionally, the lower p-value for the mpg model suggests a statistically significant relationship between mpg and hp. Overall, the evidence supports Chris's view that mpg is a more reliable predictor of hp than wt.
+
+**b) Build a model that uses the number of cylinders (cyl) and the mile per gallon (mpg) values of a car to predict the car Horse Power (hp). Using this model, what is the estimated Horse Power of a car with 4 cylinders and mpg of 22?**
+
+```{r}
+# Build a multiple linear regression model
+# Model using both cyl and mpg
+model_cyl_mpg <- lm(hp ~ cyl + mpg, data = mtcars)
+summary(model_cyl_mpg)
+```
+
+This model uses both cylinders (cyl) and miles per gallon (mpg) to predict a car's horsepower (hp). The intercept is 54.067, which serves as a baseline for horsepower. Each additional cylinder adds about 23.979 units to horsepower, while each extra mpg reduces it by roughly 2.775 units. The p-value for cylinders (0.00281) shows it’s a strong predictor of horsepower, whereas mpg, with a p-value of 0.21253, is less significant in this context. The R-squared value of 0.7093 means the model explains about 70.93% of the variation in horsepower, making it fairly reliable. This suggests that while both factors impact horsepower, the number of cylinders is the primary influence.
+
+```{r}
+Predicted_value <- predict(model_cyl_mpg, newdata = data.frame(cyl = 4, mpg = 22))      
+Predicted_value
+```
+
+The predicted value of 88.93618 means that, based on model using the number of cylinders and miles per gallon, a car with 4 cylinders and an mpg of 22 is expected to have a horsepower (hp) of about 88.94. This horsepower value indicates how powerful the car is; generally, higher horsepower allows a car to go faster and have better acceleration. The model built examines the relationship between the number of cylinders and fuel efficiency (mpg) in predicting horsepower. Therefore, it suggests that cars with 4 cylinders and 22 mpg are expected to achieve approximately 88.94 hp.
+
+# Question 3
+
+For this question, we are going to use BostonHousing dataset. The dataset is in ‘mlbench’ package, so we first need to instal the package, call the library and the load the dataset using the following commands.
+The dataset contains information about houses in different parts of Boston. Details of the dataset is explained here. Note the dataset is old, hence low house prices!
+
+**load the dataset**
+
+```{r}
+# Install and load mlbench package
+#install.packages('mlbench')
+library(mlbench)
+data(BostonHousing)
+library(readr)
+BostonHousing <- read_csv("~/Desktop/BostonHousing.csv")
+dim(BostonHousing)
+str(BostonHousing)
+summary(BostonHousing)
+```
+
+**(a) Build a model to estimate the median value of owner-occupied homes (medv)based on the following variables: crime crate (crim), proportion of residential land zoned for lots over 25,000 sq.ft (zn), the local pupil-teacher ratio (ptratio) and weather the whether the tract bounds Chas River(chas). Is this an accurate model?**
+
+```{r}
+library(corrplot)
+```
+
+```{r}
+BostonHousing$chas <- as.numeric(BostonHousing$chas)
+selected_cols <- c( "crim", "zn", "ptratio", "chas", "medv")
+Boston_Housing <- BostonHousing[, selected_cols]
+corr_matrix <- cor(Boston_Housing)
+corrplot(corr_matrix, type = "full", 
+         order = "hclust", addCoef.col = "grey", tl.col = "black")
+```
+
+```{r}
+lm_Bostonhousing <- lm(medv~crim+zn+ptratio+chas, BostonHousing)
+summary(lm_Bostonhousing)
+```
+
+**Answer: The Equation for the linear model is medv = 49.91868 - 0.26018 + 0.07073 - 1.49367 + 4.58393 = 52.81**
+
+We look at how predictor variables affect a response variable to understand their relationships and make predictions. By examining the coefficients and R-squared values, we can see how well our model fits the data and which predictors matter most. The coefficients for the variables (crim, zn, ptratio, chas) show their effects on the response variable (medv). However, the R-squared value of 0.3599 indicates that these predictors explain only about 36% of the variation in medv, suggesting that other important factors might be missing from the model. The very low p-value for the F-statistic (< 2.2e-16) shows that the overall model is significant, meaning at least one predictor has a real impact on medv. If the missing factors aren’t important or if we just want to explain part of the variation, the model may still be good enough.
+
+**(b) Use the estimated coefficient to answer these questions?**
+
+(1): Imagine two houses that are identical in all aspects but one bounds the Chas River and the other does not. Which one is more expensive and by how much?
+
+Answer: The Estimated coefficient for chas is 4.58393, which indicates that houses that are near the Charles River (chas = 1) are approximately 4.58 units more expensive than those that are not near the river (chas = 0). This suggests that, all else being equal, homes near the river are estimated to be around 4,583.93 dollars more expensive compared to those not near the river, based on the median home value of $1000.
+
+(2): Imagine two houses that are identical in all aspects but in the neighborhood of one of them the pupil-teacher ratio is 15 and in the other one is 18. Which one is more expensive and by how much?**
+
+Answer: The estimated coefficient for the pupil-teacher ratio (ptratio) is -1.49367, indicating that for each one-unit increase in the ratio, the median value of owner-occupied homes (medv) is expected to decrease by about 1,493.67, assuming all other factors remain constant. If we compare two identical houses—one in a neighborhood with a pupil-teacher ratio of 15 and the other with a ratio of 18—we can calculate the price difference. Specifically, the difference is given by  −1.49367×(18−15), which results in a decrease of approximately 4,481.01. Therefore, the house in the neighborhood with a pupil-teacher ratio of 18 is estimated to be around $4,481.01 less expensive than the one with a ratio of 15. This illustrates how neighborhood characteristics, like the pupil-teacher ratio, can significantly affect property values.
+
+**(c) Which of the variables are statistically important (i.e. related to the house price)?**
+
+All the variables in the multiple linear regression model are statistically significant at a 95% confidence level, meaning they are related to house prices. The variable 'crim' has a strong negative effect on home values, with a very low p-value of 2.20e-10, indicating a strong relationship. The variable 'zn' has a smaller but still positive impact on home prices, shown by its p-value of 6.14e-06. The 'ptratio' also has a strong negative effect on home values, with a p-value of less than 2e-16. Finally, 'chas' shows a positive correlation with house prices, supported by a p-value of 0.000514. In summary, all these variables are important and influence the median value of homes.
+
+**(d) Use the anova analysis and determine the order of importance of these four variables**
+
+```{r}
+# ANOVA to determine the importance of variables
+anova(lm_Bostonhousing)
+```
+
+The ANOVA table reveals that ‘crim’ is a significant contributor to explaining the variation in the median value of owner-occupied homes (medv), as it has the highest sum of squares (6440.8), indicating a substantial impact on the model. This highlights that including ‘crim’ significantly enhances the model's ability to explain home values. However, it's important to recognize that there is still a considerable amount of variability left unexplained, as seen in the residuals (27,344.5). All the predictor variables are statistically significant at the 95% confidence level. Based on the F-values, the order of importance is as follows: ‘crim’ (F-value = 118.007) ranks highest, followed by ‘ptratio’ (F-value = 86.287), ‘zn’ (F-value = 65.122), and ‘chas’ (F-value = 12.224). Therefore, the crime rate is the most influential variable affecting home prices, followed by the pupil-teacher ratio, the proportion of residential land zoned for larger lots, and the presence of the Charles River.

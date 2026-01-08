@@ -1,0 +1,247 @@
+---
+title: "BA Group Project"
+author: "GROUP_7"
+date: "2024-11-29"
+output: html_document
+---
+
+## Loading Required Libraries
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(tidyverse)
+library(ROCR)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+
+```
+
+Loading and Exploring the Data
+
+```{r}
+# Load the training data
+churn_data <- read.csv("~/Downloads/Churn_Train.csv")
+
+# Explore the data
+dim(churn_data)
+str(churn_data)
+summary(churn_data)
+
+# Check for missing values
+colSums(is.na(churn_data))
+
+```
+
+Visualizing Data
+
+```{r}
+ggplot(churn_data, aes(x = churn, fill = churn)) +
+  geom_bar(color = "black") +
+  scale_fill_manual(values = c("yes" = "purple", "no" = "lavender")) +
+  ggtitle("Churn Distribution") +
+  xlab("Churn Status") +
+  ylab("Count") +
+  theme_minimal()
+```
+
+Preprocessing the Data
+Handle Categorical Variables
+
+```{r}
+# Convert categorical variables to factors
+churn_data$churn <- as.factor(churn_data$churn)
+churn_data$international_plan <- as.factor(churn_data$international_plan)
+churn_data$voice_mail_plan <- as.factor(churn_data$voice_mail_plan)
+```
+Impute Missing Values
+
+```{r}
+# Define a function to calculate mode
+get_mode <- function(x) {
+  uniq_vals <- unique(x)
+  uniq_vals[which.max(tabulate(match(x, uniq_vals)))]
+}
+
+# Impute missing values in categorical variables using mode
+factor_columns <- sapply(churn_data, is.factor)
+churn_data[factor_columns] <- lapply(churn_data[factor_columns], function(col) {
+  if (any(is.na(col))) {
+    col[is.na(col)] <- get_mode(col)
+  }
+  return(col)
+})
+
+# Impute missing values in numeric variables using mean
+numeric_columns <- sapply(churn_data, is.numeric)
+churn_data[numeric_columns] <- lapply(churn_data[numeric_columns], function(col) {
+  ifelse(is.na(col), mean(col, na.rm = TRUE), col)
+})
+```
+
+Split the Data
+
+```{r}
+# Split the data into training and testing sets
+set.seed(123)
+train_index <- createDataPartition(churn_data$churn, p = 0.8, list = FALSE)
+train_data <- churn_data[train_index, ]
+test_data <- churn_data[-train_index, ]
+```
+
+Modeling
+Logistic Regression 
+# Train a logistic regression model
+
+```{r}
+set.seed(1)
+logistic_model <- glm(churn ~ ., data = train_data, family = binomial)
+
+# View model summary
+summary(logistic_model)
+```
+
+#Random Forest
+
+# Train a Random Forest model
+```{r}
+set.seed(2)
+random_forest_model <- randomForest(churn ~ ., data = train_data, ntree = 100, mtry = 3)
+
+# Variable importance plot
+varImpPlot(random_forest_model, main = "Variable Importance")
+```
+# Decision Tree
+```{r}
+# Train a Decision Tree model
+set.seed(3)
+dt_model <- rpart(churn ~ ., data = train_data, method = "class", control = rpart.control(minsplit = 150))
+
+# Visualize the Decision Tree
+fancyRpartPlot(dt_model)
+```
+
+Model Evaluation
+Logistic Regression
+
+```{r}
+# Predict probabilities on the test set
+logistic_preds <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Convert probabilities to binary predictions
+predicted_class <- ifelse(logistic_preds > 0.5, "yes", "no")
+
+# Confusion matrix
+confusionMatrix(as.factor(predicted_class), test_data$churn)
+
+# ROC Curve
+pred <- prediction(logistic_preds, test_data$churn)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col = "blue", main = "ROC Curve")
+abline(a = 0, b = 1, lty = 2)
+
+# Calculate AUC
+auc_perf <- performance(pred, "auc")
+auc_value <- auc_perf@y.values[[1]]
+print(paste("AUC:", auc_value))
+```
+Random Forest
+
+```{r}
+# Predict on the test set
+rf_preds <- predict(random_forest_model, newdata = test_data, type = "response")
+
+# Confusion matrix
+confusionMatrix(as.factor(rf_preds), test_data$churn)
+
+# ROC Curve
+rf_pred_probs <- predict(random_forest_model, newdata = test_data, type = "prob")[, 2]
+rf_pred <- prediction(rf_pred_probs, test_data$churn)
+rf_perf <- performance(rf_pred, "tpr", "fpr")
+plot(rf_perf, col = "green", main = "ROC Curve - Random Forest")
+abline(a = 0, b = 1, lty = 2)
+
+# Calculate AUC
+rf_auc_perf <- performance(rf_pred, "auc")
+rf_auc_value <- rf_auc_perf@y.values[[1]]
+print(paste("AUC - Random Forest:", rf_auc_value))
+
+```
+
+Decision Tree
+```{r}
+# Predict on the test set
+dt_preds <- predict(dt_model, newdata = test_data, type = "class")
+
+# Confusion matrix
+confusionMatrix(as.factor(dt_preds), test_data$churn)
+
+# ROC Curve
+dt_pred_probs <- predict(dt_model, newdata = test_data, type = "prob")[, 2]
+dt_pred <- prediction(dt_pred_probs, test_data$churn)
+dt_perf <- performance(dt_pred, "tpr", "fpr")
+plot(dt_perf, col = "orange", main = "ROC Curve - Decision Tree")
+abline(a = 0, b = 1, lty = 2)
+
+# Calculate AUC
+dt_auc_perf <- performance(dt_pred, "auc")
+dt_auc_value <- dt_auc_perf@y.values[[1]]
+print(paste("AUC - Decision Tree:", dt_auc_value))
+
+```
+Predict Churn for New Data
+```{r}
+# Load the new data
+load("~/Downloads/Customers_To_Predict.RData")
+```
+
+View the First Few Rows of the Data
+```{r}
+head(Customers_To_Predict)
+```
+
+# Preprocess the new data (convert categorical variables to factors)
+```{r}
+Customers_To_Predict$international_plan <- as.factor(Customers_To_Predict$international_plan)
+Customers_To_Predict$voice_mail_plan <- as.factor(Customers_To_Predict$voice_mail_plan)
+```
+
+# Impute missing values in numeric columns
+```{r}
+numeric_columns <- sapply(Customers_To_Predict, is.numeric)
+Customers_To_Predict[numeric_columns] <- lapply(Customers_To_Predict[numeric_columns], function(col) {
+  ifelse(is.na(col), mean(col, na.rm = TRUE), col)
+})
+```
+# Predict churn probabilities
+```{r}
+Customers_To_Predict$Churn_Prob <- predict(random_forest_model, newdata = Customers_To_Predict, type = "prob")[, 2]
+```
+# Save predictions to a CSV file
+```{r}
+# Construct the path for the output CSV file
+file_path <- "/Users/dimplefnu/Downloads/BA Group_7 /New_Customers_To_Predict.csv"
+
+# Write the CSV file
+write.csv(Customers_To_Predict, file_path, row.names = FALSE)
+```
+
+```{r}
+# Define the threshold
+threshold <- 0.5
+
+# Add churn classification based on the threshold
+Customers_To_Predict <- Customers_To_Predict %>%
+  mutate(churn = ifelse(Churn_Prob > threshold, "yes", "no"))
+
+# View the updated dataset
+head(Customers_To_Predict[, c("Churn_Prob", "churn")])
+```
+
+```{r}
+ write.csv(Customers_To_Predict,"/Users/dimplefnu/Downloads/BA Group_7 /Prediction Group_7.csv", row.names = FALSE)
+```

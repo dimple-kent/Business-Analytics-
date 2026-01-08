@@ -1,0 +1,110 @@
+---
+title: "Carseats Assignment-1"
+author: "FNU Dimple"
+date: "2024-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question no.1
+
+**Firstly, Install ISLR package**
+```{r}
+#install.packages("ISLR")
+```
+
+# Question no.2
+
+***Now, Load the ISLR library and summarize the carseats datset***
+```{r}
+library(ISLR)
+summary(Carseats) # Summary of Carseats
+dim(Carseats)     # Dimension of Carseats
+nrow(Carseats)    # Rows of Carseats
+ncol(Carseats)   # columns of Carseats
+```
+**summary(carseats):**
+ The summary gives an overview of the information about all the dataset. It shows descriptive statistics for all variables (column) and observations (rows) in the dataset. Variables includes information minimum, maximum, mean and median values for each column. Observations includes how many data points each column has. ***For example***, Sales, comPrice, Income, Price, Advertising, Population, Age, Education and ShelveLoc.
+
+-  ***Sales:*** The sales values range from 0 to 16.27, with a median of 7.49, indicating that half of the sales are below this value. The mean (average) is very close at 7.496, showing a balanced distribution of sales data.
+
+
+-  ***CompPrice:*** (Competitor Price): Prices from competing stores vary between 77 and 175, with a median of 125. This means the middle value of competitor prices is 125, showing a competitive market.
+
+
+-  ***Income:*** Incomes in the dataset range from 21 to 120, with a median income of 69 and an average of 68.66, reflecting a fairly even spread.
+
+
+-  ***Price:*** Product prices range from 24 to 191, with a median of 117. The average price is 115.8, and most prices are between 100 and 131 (as indicated by the 1st and 3rd quartiles).
+
+
+-  ***Advertising:*** Advertising expenditure goes from 0 to 29, with most stores spending very little (median 5), but a few spending significantly more, as seen with the maximum value of 29.
+
+
+-  ***Population:*** The population sizes around the stores range from 10 to 509, with an average of 264.8. This wide range shows that stores operate in areas with very different population densities.
+
+
+-  ***ShelveLoc:*** This variable categorizes shelf locations as either "Good," "Medium," or "Bad." Most stores have medium shelf locations (219), followed by bad (96), and good (85) shelf placements.
+
+
+-  ***Age:*** Customers’ ages vary from 25 to 80, with a median of 54.5 and a mean of 53.32. This shows a predominantly middle-aged customer base.
+
+
+-  ***Education:*** Education levels range from 10 to 18 years, with a median of 14 years, indicating that most customers have some level of college education.
+
+
+-  ***Urban:*** This variable indicates whether the store is in an urban location, with 282 stores being in urban areas and 118 in non-urban locations.
+
+
+-  ***US:*** This shows whether the store is in the U.S. or not, with 258 stores located in the U.S. and 142 outside the country.
+
+# Question no.3
+
+**The maximum value of advertising attribute**
+
+```{r}
+max(Carseats$Advertising)
+```
+
+The advertising column shows 29 is the highest amount a store spent on advertising. This number stands out because many stores spent less.
+
+# Question no.4
+
+***IQR of the price attribute***
+```{r}
+IQR(Carseats$Price) 
+```
+
+The value 31 is the interquartile range of the Price column from the Carseats dataset. The Interquartile Range (IQR) calculates the middle 50% of the data. It is computed by finding the difference between the 75th percentile (Q3) and the 25th percentile (Q1) values. The maximum and minimum values are not considered in this calculation. To find the IQR, subtract Q1 from Q3: IQR = Q3 - Q1. For example,  Q3 is 131 and Q1 is 100, then the IQR would be 131 - 100 = 31.
+
+# Question no.5
+
+***plot the Sales against Price and calculate correlation between sales and price ***
+```{r}
+
+# Firstly, create the scatter plot it shows two variables then  calculate the correlation coefficient with the cor() function gives details about relationship between Price and Sales.
+plot(Carseats$Sales, Carseats$Price,
+     main = "sales vs. Price",
+     xlab = "price",
+     ylab = "sales",
+     pch = 19)
+```
+
+```{r}
+correlation <- cor(Carseats$Price, Carseats$Sales)
+correlation
+```
+
+***Calculate the correlation coefficient between sales and price:***
+
+-  A positive number close to +1 means ***price*** goes up, ***sales*** also go up. Prices are lower, people often buy more.
+
+
+-  A negative number -0.4449507 close to -1 means that as ***Price*** goes up, ***Sales*** go down. If the correlation coefficient is negative, this means that as higher prices might reduce sales, because people buy less when prices are higher.
+
+# Final Insights:
+
+Carseats dataset from the ISLR library dataset has 400 rows and includes details like sales, prices, advertising, and other information. The maximum value of advertising attribute is 29 showing that different stores spend different amounts on ads and also calculated the IQR Price. Plot shows sales against price as price go up, sales tend to go down while price go down then sales tend to go up. The correlation value also showed this negative relationship. The analysis of this dataset shows pricing and advertising, impact sales performance in retail environments. 
